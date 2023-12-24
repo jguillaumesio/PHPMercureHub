@@ -1,0 +1,18 @@
+{
+    "name": "jguillaumesio/php_mercure_hub",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Jguillaumesio\\PhpMercureHub\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "jguillaumesio",
+            "email": "62891175+jguillaumesio@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "uri-template/uri-template": "^1.0"
+    }
+}
