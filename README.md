@@ -10,6 +10,6 @@ an associative array
 ```php
 <?php
 return [
-    'utils' => \Namespace\To\UtilClass
+    'utils' => UtilClass::class
 ]
 ```

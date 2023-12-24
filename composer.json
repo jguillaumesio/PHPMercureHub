@@ -13,6 +13,6 @@
         }
     ],
     "require": {
-        "uri-template/uri-template": "^1.0"
+        "rize/uri-template": "^0.3.5"
     }
 }

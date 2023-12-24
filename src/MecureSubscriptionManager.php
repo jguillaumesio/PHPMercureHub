@@ -2,6 +2,7 @@
 
 namespace Jguillaumesio\PhpMercureHub;
 
+use Rize\UriTemplate;
 use UriTemplate\Processor;
 use UriTemplate\UriTemplate;
 
@@ -34,8 +35,12 @@ class MecureSubscriptionManager
         $this->request['language'] = $this->request['headers']['accept-language'] ?? null;
     }
 
-    public function topicSelector(){
-        UriTemplate::expand()
+    public function getMatchingTopics($selector){
+        if($selector === '*'){
+            return $this->topics;
+        }
+        $uri = new UriTemplate($selector, ['version' => 4]);
+        return \array_filter($this->topics, fn($topic) => $uri->extract($selector, $topic) !== null || $selector === $topic);
     }
 
     public function addTopic($topic){
