@@ -8,7 +8,6 @@ use Rize\UriTemplate;
 class MecureSubscriptionManager
 {
     private $topics = [];
-    private $config = [];
     private $request;
     private $utils;
     private $hubUrl;
@@ -16,42 +15,28 @@ class MecureSubscriptionManager
     /**
      * @return array
      */
-    public function getTopics(): array {
+    public function getTopics() {
         return $this->topics;
     }
 
     /**
      * @param array $topics
      */
-    public function setTopics(array $topics): void {
+    public function setTopics(array $topics) {
         $this->topics = $topics;
-    }
-
-    /**
-     * @return array|mixed
-     */
-    public function getConfig() {
-        return $this->config;
-    }
-
-    /**
-     * @param array|mixed $config
-     */
-    public function setConfig($config): void {
-        $this->config = $config;
     }
 
     /**
      * @return array
      */
-    public function getRequest(): array {
+    public function getRequest() {
         return $this->request;
     }
 
     /**
      * @param array $request
      */
-    public function setRequest(array $request): void {
+    public function setRequest(array $request) {
         $this->request = $request;
     }
 
@@ -65,33 +50,27 @@ class MecureSubscriptionManager
     /**
      * @param Utils|mixed $utils
      */
-    public function setUtils($utils): void {
+    public function setUtils($utils) {
         $this->utils = $utils;
     }
 
     /**
      * @return string
      */
-    public function getHubUrl(): string {
+    public function getHubUrl() {
         return $this->hubUrl;
     }
 
     /**
      * @param string $hubUrl
      */
-    public function setHubUrl(string $hubUrl): void {
+    public function setHubUrl(string $hubUrl) {
         $this->hubUrl = $hubUrl;
     }
 
     public function __construct(){
-        $configFilePath = getenv('MERCURE_CONFIG_PATH');
-        if($configFilePath === false){
-            throw new \Error('MISSING_ENV_MERCURE_CONFIG_PATH');
-        }
-        if (file_exists($configFilePath) && is_readable($configFilePath)) {
-            $this->config = require $configFilePath;
-        }
-        $this->utils = new $this->config['utils'] ?? new Utils();
+        $config = new Config();
+        $this->utils = new $config['utils'] ?? new Utils();
         $this->request = [
             'headers' => $this->utils->getHeaders(),
             'query_params' => $this->utils->getQueryParams(),

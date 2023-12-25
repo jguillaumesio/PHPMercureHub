@@ -3,6 +3,6 @@
 namespace Jguillaumesio\PhpMercureHub\Authorization;
 
 interface AuthorizationMethodInterface {
-    public function authorize($request);
+    public function getJWT($request);
     public function setNextHandler(AuthorizationMethodInterface $nextHandler);
 }

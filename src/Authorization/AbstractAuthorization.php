@@ -11,6 +11,6 @@ abstract class AbstractAuthorization
     }
 
     public function next(){
-        return ($this->nextHandler !== null) ? $this->nextHandler->authorize() : false;
+        return ($this->nextHandler !== null) ? $this->nextHandler->authorize() : null;
     }
 }
