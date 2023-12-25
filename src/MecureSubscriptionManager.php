@@ -69,7 +69,7 @@ class MecureSubscriptionManager
     }
 
     public function __construct(){
-        $config = new Config();
+        $config = Config::getConfig();
         $this->utils = new $config['utils'] ?? new Utils();
         $this->request = [
             'headers' => $this->utils->getHeaders(),

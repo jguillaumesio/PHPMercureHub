@@ -28,6 +28,7 @@ an associative array
 <?php  
 return [  
  'utils' => '\Namespace\To\UtilClass',
+ 'auth_cookie_name' => 'mercureAuthorization',
  'jwt' => [
 	 'algo' => 'HS256',
 	 'secret' => 'secret'

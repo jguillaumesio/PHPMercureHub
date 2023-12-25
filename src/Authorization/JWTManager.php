@@ -46,7 +46,7 @@ class JWTManager {
     }
 
     private function generateJWT(){
-        $config = new Config();
+        $config = Config::getConfig();
         if(!$this->checkJWTConfigValidity($config)){
             throw new \Error('INVALID_OR_MISSING_JWT_CONFIGURATION');
         }

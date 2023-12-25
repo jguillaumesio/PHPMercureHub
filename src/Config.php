@@ -4,19 +4,24 @@ namespace Jguillaumesio\PhpMercureHub;
 
 class Config {
 
-    private static $config;
+    private static $instance;
+    private $config;
 
     public function __construct(){
-        if(!isset(self::$config) || self::$config === null){
-            $configFilePath = getenv('MERCURE_CONFIG_PATH');
-            if($configFilePath === false){
-                throw new \Error('MISSING_ENV_MERCURE_CONFIG_PATH');
-            }
-            if (file_exists($configFilePath) && is_readable($configFilePath)) {
-                self::$config = require $configFilePath;
-            }
+        $configFilePath = getenv('MERCURE_CONFIG_PATH');
+        if($configFilePath === false){
+            throw new \Error('MISSING_ENV_MERCURE_CONFIG_PATH');
         }
-        return self::$config;
+        if (file_exists($configFilePath) && is_readable($configFilePath)) {
+            $this->config = require $configFilePath;
+        }
+    }
+
+    public static function getConfig(){
+        if(!isset(self::$instance) || self::$instance === null){
+            self::$instance = new self();
+        }
+        return self::$instance->config;
     }
 
 }
