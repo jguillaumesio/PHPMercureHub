@@ -1,21 +1,8 @@
 <?php
 
-namespace Jguillaumesio\PhpMercureHub;
+namespace Jguillaumesio\PhpMercureHub\Utils;
 
-use Jguillaumesio\PhpMercureHub\Response\HTMLMercureResponse;
-use Jguillaumesio\PhpMercureHub\Response\JSONMercureResponse;
-
-class Utils implements UtilsInterface {
-
-    public static $availableResponseTypes = [
-        'text/html' => [
-            'type' => 'html',
-            'encoder' => HTMLMercureResponse::class
-        ],
-        'application/ld+json' => [
-            'type' => 'jsonld',
-            'encoder' => JSONMercureResponse::class
-        ]];
+class Utils extends AbstractUtils implements UtilsInterface {
 
     public function setHeader($key, $value, $replace = true){
         if(\headers_sent()){
@@ -44,10 +31,17 @@ class Utils implements UtilsInterface {
         return $headers;
     }
 
-    public function generateResponse($resource, $values, $request, $type){
-        if(!array_key_exists($type, self::$availableResponseTypes)){
-            throw new \Error('INVALID_CONTENT_TYPE_OR_RESPONSE_TYPE');
+    public function getQueryParams(){
+        $headers = [];
+        foreach ($_SERVER as $key => $value) {
+            if (strpos($key, 'HTTP_') === 0) {
+                $headers[strtolower(str_replace(' ', '', ucwords(str_replace('_', ' ', strtolower(substr($key, 5))))))] = $value;
+            }
         }
-        return (new self::$availableResponseTypes[$type]['encoder']())->generate($resource, $values, $request);
+        return $headers;
+    }
+
+    public function getCookies(){
+        return $_SERVER['HTTP_COOKIE'];
     }
 }

@@ -2,9 +2,8 @@
 
 namespace Jguillaumesio\PhpMercureHub;
 
+use Jguillaumesio\PhpMercureHub\Utils\Utils;
 use Rize\UriTemplate;
-use UriTemplate\Processor;
-use UriTemplate\UriTemplate;
 
 class MecureSubscriptionManager
 {
@@ -13,6 +12,76 @@ class MecureSubscriptionManager
     private $request;
     private $utils;
     private $hubUrl;
+
+    /**
+     * @return array
+     */
+    public function getTopics(): array {
+        return $this->topics;
+    }
+
+    /**
+     * @param array $topics
+     */
+    public function setTopics(array $topics): void {
+        $this->topics = $topics;
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function getConfig() {
+        return $this->config;
+    }
+
+    /**
+     * @param array|mixed $config
+     */
+    public function setConfig($config): void {
+        $this->config = $config;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRequest(): array {
+        return $this->request;
+    }
+
+    /**
+     * @param array $request
+     */
+    public function setRequest(array $request): void {
+        $this->request = $request;
+    }
+
+    /**
+     * @return Utils|mixed
+     */
+    public function getUtils() {
+        return $this->utils;
+    }
+
+    /**
+     * @param Utils|mixed $utils
+     */
+    public function setUtils($utils): void {
+        $this->utils = $utils;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHubUrl(): string {
+        return $this->hubUrl;
+    }
+
+    /**
+     * @param string $hubUrl
+     */
+    public function setHubUrl(string $hubUrl): void {
+        $this->hubUrl = $hubUrl;
+    }
 
     public function __construct(){
         $configFilePath = getenv('MERCURE_CONFIG_PATH');
@@ -25,6 +94,8 @@ class MecureSubscriptionManager
         $this->utils = new $this->config['utils'] ?? new Utils();
         $this->request = [
             'headers' => $this->utils->getHeaders(),
+            'query_params' => $this->utils->getQueryParams(),
+            'cookies' => $this->utils->getCookies()
         ];
         $this->processRequest();
         $this->hubUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . '/.well-known/mercure';
@@ -62,14 +133,24 @@ class MecureSubscriptionManager
         $this->utils->setHeader('Content-type', $this->request['response_type']);
     }
 
-    private function setLinkHeaders($resource, $includeSelf = true){
+    private function setLinkHeaders($topic, $includeSelf = true){
         $headers = [
             ['key' => 'Link', 'value' => "<$this->hubUrl>; rel=\"mercure\""]
         ];
         if($includeSelf){
-            $headers[] = ['key' => 'Link', 'value' => '<' . $resource . ($this->request['language'] !== null ? '-'.$this->request['language'] : '') . '.' . $this->request['response_type'] . '>; rel="self"'];
+            $headers[] = ['key' => 'Link', 'value' => '<' . $topic . ($this->request['language'] !== null ? '-'.$this->request['language'] : '') . '.' . $this->request['response_type'] . '>; rel="self"'];
         }
         $this->utils->setHeaders($headers, false);
+    }
+
+    public function setSubscriptionHeaders($topic){
+        $this->setLinkHeaders($topic);
+        $this->setResponseTypeHeader();
+    }
+
+    public function setPublicationHeaders($topic){
+        $this->setLinkHeaders($topic);
+        $this->setResponseTypeHeader();
     }
 
     private function doesTopicExists($name){
