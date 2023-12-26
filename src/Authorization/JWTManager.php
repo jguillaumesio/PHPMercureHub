@@ -61,24 +61,15 @@ class JWTManager {
         return new JWT($key, $config['jwt']['algo'], $this->jwtConfig['maxAge'], $this->jwtConfig['leeway']);
     }
 
-    public function generateJWS($payload, $header){
-        $token = $this->jwt->encode($payload, $header);
-        $tokenParts = explode('.', $token);
-        return [
-            'header' => json_decode($this->base64url_decode($tokenParts[0]), true),
-            'payload' => json_decode($this->base64url_decode($tokenParts[1]), true),
-            'signature' => $tokenParts[2],
-        ];
+    public function generateJWTToken($payload, $header){
+        return $this->jwt->encode($payload, $header);
     }
 
-    public function checkJWS($jws){
+    public function getJWTPayload($jwt){
         try{
-            $header = $this->base64url_encode($jws['header']);
-            $payload = $this->base64url_encode($jws['payload']);
-            $jwt = "$header.$payload.{$jws['signature']}";
             return $this->jwt->decode($jwt);
         }catch(JWTException $e){
-            return false;
+            return null;
         }
     }
 }

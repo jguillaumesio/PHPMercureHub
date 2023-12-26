@@ -5,7 +5,7 @@ namespace Jguillaumesio\PhpMercureHub\Authorization;
 class AuthorizationManager
 {
 
-    public function checkAuthorization($request){
+    public function getJWTPayload($request){
         $headersMethod = new HeadersAuthorization();
         $cookiesMethod = new CookiesAuthorization();
         $queryParamsMethod = new QueryParamsAuthorization();
@@ -14,7 +14,7 @@ class AuthorizationManager
         $cookiesMethod->setNextHandler($queryParamsMethod);
 
         $jwt = $headersMethod->getJWT($request);
-        return (JWTManager::getInstance())->checkJWS($jwt);
+        return (JWTManager::getInstance())->getJWTPayload($jwt);
     }
 
 }

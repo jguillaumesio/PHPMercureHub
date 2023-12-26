@@ -2,68 +2,47 @@
 
 namespace Jguillaumesio\PhpMercureHub;
 
+use Jguillaumesio\PhpMercureHub\Models\Subscriber;
+use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
 use Jguillaumesio\PhpMercureHub\Utils\Utils;
-use Rize\UriTemplate;
 
-class MecureSubscriptionManager
+class SubscriptionManager
 {
     private $topics = [];
+    private $subscribers = [];
     private $request;
     private $utils;
     private $hubUrl;
+    private $topicUtils;
 
-    /**
-     * @return array
-     */
     public function getTopics() {
         return $this->topics;
     }
 
-    /**
-     * @param array $topics
-     */
     public function setTopics(array $topics) {
         $this->topics = $topics;
     }
 
-    /**
-     * @return array
-     */
     public function getRequest() {
         return $this->request;
     }
 
-    /**
-     * @param array $request
-     */
     public function setRequest(array $request) {
         $this->request = $request;
     }
 
-    /**
-     * @return Utils|mixed
-     */
     public function getUtils() {
         return $this->utils;
     }
 
-    /**
-     * @param Utils|mixed $utils
-     */
     public function setUtils($utils) {
         $this->utils = $utils;
     }
 
-    /**
-     * @return string
-     */
     public function getHubUrl() {
         return $this->hubUrl;
     }
 
-    /**
-     * @param string $hubUrl
-     */
     public function setHubUrl(string $hubUrl) {
         $this->hubUrl = $hubUrl;
     }
@@ -78,6 +57,7 @@ class MecureSubscriptionManager
         ];
         $this->processRequest();
         $this->hubUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . '/.well-known/mercure';
+        $this->topicUtils = new TopicUtils();
     }
 
     private function processRequest(){
@@ -85,18 +65,13 @@ class MecureSubscriptionManager
         $this->request['language'] = $this->request['headers']['accept-language'] ?? null;
     }
 
-    public function getMatchingTopics($selector){
-        if($selector === '*'){
-            return $this->topics;
-        }
-        $uri = new UriTemplate($selector, ['version' => 4]);
-        return \array_filter($this->topics, fn($topic) => $uri->extract($selector, $topic) !== null || $selector === $topic);
-    }
-
     public function addTopic($topic){
         if(\is_array($this->topics)){
             if(\array_key_exists($topic->name, $this->topics)){
                 throw new \Error('TOPIC_ALREADY_EXISTS');
+            }
+            if(!$this->topicUtils->isValidTopicName($topic->name)){
+                throw new \Error('INVALID_EXISTS');
             }
             $this->topics[$topic->name] = null;
         }
@@ -132,11 +107,20 @@ class MecureSubscriptionManager
         $this->setResponseTypeHeader();
     }
 
-    private function doesTopicExists($name){
-        return \array_key_exists($name, $this->topics);
+    public function getAllSubscriptions(){
+        //.well-known/mercure/subscriptions: the collection of subscriptions
+        return \array_reduce($this->topics, fn($acc, $topic) => [...$acc, ...$topic->subscribers], []);
     }
 
-    public function getTopic($name){
-        return $this->doesTopicExists($name) ? $this->topics[$name] : null;
+    public function getSubscriptionByTopicSelector($selector){
+        //.well-known/mercure/subscriptions/{topic}: the collection of subscriptions for the given topic selector
+        $topics = $this->topicUtils->getMatchingTopics($selector, $this->topics);
+        return \array_reduce($topics, fn($acc, $topic) => [...$acc, ...$topic->subscribers], []);
+    }
+
+    public function getSubscriptionForTopic($subscriber){
+        //.well-known/mercure/subscriptions/{topic}/{subscriber}: a specific subscription
+        $topics = $this->topicUtils->getMatchingTopics($selector, $this->topics);
+        return \array_reduce($topics, fn($acc, $topic) => [...$acc, ...$topic->subscribers], []);
     }
 }
