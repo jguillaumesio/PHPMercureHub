@@ -1,3 +1,7 @@
+# :warning: Warning
+
+**This project is still under development and is not usable yet, feel free to make
+pull requests or to contact me for any further questions !**
 
 # TODO
 
