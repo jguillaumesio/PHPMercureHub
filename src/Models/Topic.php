@@ -10,7 +10,7 @@ class Topic
     private $subscribers;
 
     public function __construct($name){
-        if(!(new TopicUtils())->isValidTopicName($name)){
+        if(!TopicUtils::isValidTopicName($name)){
             throw new \Error('INVALID_EXISTS');
         }
         $this->name = $name;

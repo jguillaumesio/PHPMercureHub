@@ -17,7 +17,7 @@ class AbstractUtils {
             'encoder' => JSONMercureResponse::class
         ]];
 
-    public function generateResponse($resource, $values, $request, $type){
+    public static function generateResponse($resource, $values, $request, $type){
         if(!array_key_exists($type, self::$availableResponseTypes)){
             throw new \Error('INVALID_CONTENT_TYPE_OR_RESPONSE_TYPE');
         }

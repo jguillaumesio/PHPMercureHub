@@ -9,12 +9,10 @@ class SubscriptionController {
 
     private $subscriptionManager;
     private $authManager;
-    private $topicUtils;
 
     public function __construct(){
         $this->subscriptionManager = new SubscriptionManager();
         $this->authManager = new AuthorizationManager();
-        $this->topicUtils = new TopicUtils();
     }
 
     public function publication(){
@@ -36,7 +34,7 @@ class SubscriptionController {
         }
         $topics = \array_filter(
             \is_array($_GET['topic']) ? $_GET['topic'] : [$_GET['topic']],
-            fn($topic) => $this->topicUtils->isValidTopicName($topic)
+            fn($topic) => TopicUtils::isValidTopicName($topic)
         );
         if(\count($topics) === 0){
             throw new \Error('INVALID_OR_MISSING_TOPIC');
@@ -54,6 +52,12 @@ class SubscriptionController {
         }
         //check content type
         //TODO retrieve topics
+        $request = $this->subscriptionManager->getRequest();
+        $selectors = !\array_key_exists('topic', $request['query_params']) ? [] : $request['query_params']['topic'];
+        $topics = TopicUtils::getMatchingTopics($selectors, $this->subscriptionManager->getTopics());
+        if(\count($topics) === 0){
+            throw new \Error('INVALID_OR_MISSING_TOPIC');
+        }
         $this->subscriptionManager->setSubscriptionHeaders();
     }
 

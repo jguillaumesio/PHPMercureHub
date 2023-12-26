@@ -27,16 +27,6 @@ class JWTManager {
         return self::$instance;
     }
 
-    private function base64url_decode($data) {
-        $base64 = strtr($data, '-_', '+/');
-        return base64_decode($base64);
-    }
-
-    private function base64url_encode($data) {
-        $base64 = base64_encode($data);
-        return strtr($base64, '+/', '-_');
-    }
-
     private function checkJWTConfigValidity($config){
         return \array_key_exists('jwt',$config) &&
             \array_key_exists('algo',$config['jwt']) &&

@@ -4,14 +4,14 @@ namespace Jguillaumesio\PhpMercureHub\Utils;
 
 class Utils extends AbstractUtils implements UtilsInterface {
 
-    public function setHeader($key, $value, $replace = true){
+    public static function setHeader($key, $value, $replace = true){
         if(\headers_sent()){
             throw new \Error('HEADERS_ALREADY_SENT');
         }
         header("$key: $value", $replace);
     }
 
-    public function setHeaders($keyValues, $replace){
+    public static function setHeaders($keyValues, $replace){
         //This allow to only check one time for headers_sent instead or n times
         if(\headers_sent()){
             throw new \Error('HEADERS_ALREADY_SENT');
@@ -21,7 +21,7 @@ class Utils extends AbstractUtils implements UtilsInterface {
         }
     }
 
-    public function getHeaders(){
+    public static function getHeaders(){
         $headers = [];
         foreach ($_SERVER as $key => $value) {
             if (strpos($key, 'HTTP_') === 0) {
@@ -31,17 +31,26 @@ class Utils extends AbstractUtils implements UtilsInterface {
         return $headers;
     }
 
-    public function getQueryParams(){
-        $headers = [];
-        foreach ($_SERVER as $key => $value) {
-            if (strpos($key, 'HTTP_') === 0) {
-                $headers[strtolower(str_replace(' ', '', ucwords(str_replace('_', ' ', strtolower(substr($key, 5))))))] = $value;
+    public static function getQueryParams(){
+        $queryString = $_SERVER['QUERY_STRING'];
+        $queryParams = [];
+        foreach (explode('&', $queryString) as $param) {
+            list($name, $value) = array_pad(explode('=', $param, 2), 2, null);
+            $name = urldecode($name);
+            $value = urldecode($value);
+            if (array_key_exists($name, $queryParams)) {
+                if (!is_array($queryParams[$name])) {
+                    $queryParams[$name] = [$queryParams[$name]];
+                }
+                $queryParams[$name][] = $value;
+            } else {
+                $queryParams[$name] = $value;
             }
         }
-        return $headers;
+        return $queryParams;
     }
 
-    public function getCookies(){
+    public static function getCookies(){
         return $_SERVER['HTTP_COOKIE'];
     }
 }

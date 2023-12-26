@@ -6,16 +6,14 @@ use Jguillaumesio\PhpMercureHub\Authorization\AuthorizationManager;
 use Jguillaumesio\PhpMercureHub\Models\Subscriber;
 use Jguillaumesio\PhpMercureHub\Models\Topic;
 use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
-use Jguillaumesio\PhpMercureHub\Utils\Utils;
+use Jguillaumesio\PhpMercureHub\Utils\UtilsManager;
 
 class SubscriptionManager
 {
     private $topics = [];
     private $subscribers = [];
     private $request;
-    private $utils;
     private $hubUrl;
-    private $topicUtils;
 
     public function getTopics() {
         return $this->topics;
@@ -33,14 +31,6 @@ class SubscriptionManager
         $this->request = $request;
     }
 
-    public function getUtils() {
-        return $this->utils;
-    }
-
-    public function setUtils($utils) {
-        $this->utils = $utils;
-    }
-
     public function getHubUrl() {
         return $this->hubUrl;
     }
@@ -51,15 +41,13 @@ class SubscriptionManager
 
     public function __construct(){
         $config = Config::getConfig();
-        $this->utils = new $config['utils'] ?? new Utils();
         $this->request = [
-            'headers' => $this->utils->getHeaders(),
-            'query_params' => $this->utils->getQueryParams(),
-            'cookies' => $this->utils->getCookies()
+            'headers' => UtilsManager::getHeaders(),
+            'query_params' => UtilsManager::getQueryParams(),
+            'cookies' => UtilsManager::getCookies()
         ];
         $this->processRequest();
         $this->hubUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . '/.well-known/mercure';
-        $this->topicUtils = new TopicUtils();
     }
 
     private function processRequest(){
@@ -86,7 +74,7 @@ class SubscriptionManager
     }
 
     public function subscribe($selector){
-        $topics = $this->topicUtils->getMatchingTopics($selector, $this->topics);
+        $topics = TopicUtils::getMatchingTopics($selector, $this->topics);
         if(\count($topics) > 0){
             $jwtPayload = (new AuthorizationManager())->getJWTPayload($this->request);
             $subscriber = $this->getSubscriber($jwtPayload['subscriber'] ?? null);
@@ -104,24 +92,26 @@ class SubscriptionManager
         if($this->request['response_type'] === null){
             throw new \Error('MISSING_CONTENT_TYPE_OR_RESPONSE_TYPE');
         }
-        else if(!array_key_exists($this->request['response_type'], $this->utils::$availableResponseTypes)) {
+        else if(!array_key_exists($this->request['response_type'], UtilsManager::$availableResponseTypes)) {
             throw new \Error('INVALID_CONTENT_TYPE_OR_RESPONSE_TYPE');
         }
-        $this->utils->setHeader('Content-type', $this->request['response_type']);
+        UtilsManager::setHeader('Content-type', $this->request['response_type']);
     }
 
-    private function setLinkHeaders($topic, $includeSelf = true){
+    private function setLinkHeaders($topics, $includeSelf = true){
         $headers = [
             ['key' => 'Link', 'value' => "<$this->hubUrl>; rel=\"mercure\""]
         ];
-        if($includeSelf){
-            $headers[] = ['key' => 'Link', 'value' => '<' . $topic . ($this->request['language'] !== null ? '-'.$this->request['language'] : '') . '.' . $this->request['response_type'] . '>; rel="self"'];
+        foreach ($topics as $topic){
+            if($includeSelf){
+                $headers[] = ['key' => 'Link', 'value' => '<' . $topic . ($this->request['language'] !== null ? '-'.$this->request['language'] : '') . '.' . $this->request['response_type'] . '>; rel="self"'];
+            }
         }
-        $this->utils->setHeaders($headers, false);
+        UtilsManager::setHeaders($headers, false);
     }
 
-    public function setSubscriptionHeaders($topic){
-        $this->setLinkHeaders($topic);
+    public function setSubscriptionHeaders($topics){
+        $this->setLinkHeaders($topics);
         $this->setResponseTypeHeader();
     }
 
@@ -135,13 +125,13 @@ class SubscriptionManager
     }
 
     public function getSubscriptionByTopicSelector($selector){
-        $topics = $this->topicUtils->getMatchingTopics($selector, $this->topics);
+        $topics = TopicUtils::getMatchingTopics($selector, $this->topics);
         return \array_reduce($topics, fn($acc, $topic) => [...$acc, ...$topic->getSubscriptions()], []);
     }
 
     public function getSubscriptionForTopic($topicName, $subscriberId){
         $subscriber = $this->getSubscriber($subscriberId);
-        $topics = $this->topicUtils->getMatchingTopics($topicName, $this->topics);
+        $topics = TopicUtils::getMatchingTopics($topicName, $this->topics);
         if(\count($topics) !== 1 || $subscriber === null){
             return null;
         }
