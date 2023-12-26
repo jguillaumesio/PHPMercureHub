@@ -2,7 +2,9 @@
 
 namespace Jguillaumesio\PhpMercureHub;
 
+use Jguillaumesio\PhpMercureHub\Authorization\AuthorizationManager;
 use Jguillaumesio\PhpMercureHub\Models\Subscriber;
+use Jguillaumesio\PhpMercureHub\Models\Topic;
 use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
 use Jguillaumesio\PhpMercureHub\Utils\Utils;
 
@@ -65,16 +67,37 @@ class SubscriptionManager
         $this->request['language'] = $this->request['headers']['accept-language'] ?? null;
     }
 
-    public function addTopic($topic){
+    public function addTopic($topicName){
         if(\is_array($this->topics)){
-            if(\array_key_exists($topic->name, $this->topics)){
+            $topic = new Topic($topicName);
+            if(\array_key_exists($topicName, $this->topics)){
                 throw new \Error('TOPIC_ALREADY_EXISTS');
             }
-            if(!$this->topicUtils->isValidTopicName($topic->name)){
-                throw new \Error('INVALID_EXISTS');
-            }
-            $this->topics[$topic->name] = null;
+            $this->topics[$topicName] = $topic;
         }
+    }
+
+    private function getSubscriber($id){
+        if (array_key_exists($id, $this->subscribers)) {
+            return $this->subscribers[$id];
+        } else {
+            return null;
+        }
+    }
+
+    public function subscribe($selector){
+        $topics = $this->topicUtils->getMatchingTopics($selector, $this->topics);
+        if(\count($topics) > 0){
+            $jwtPayload = (new AuthorizationManager())->getJWTPayload($this->request);
+            $subscriber = $this->getSubscriber($jwtPayload['subscriber'] ?? null);
+            if($subscriber === null){
+                $this->subscribers[] = new Subscriber($topics);
+            } else {
+                $subscriber->subscribe($topics);
+            }
+            return true;
+        }
+        return false;
     }
 
     private function setResponseTypeHeader(){
@@ -108,19 +131,20 @@ class SubscriptionManager
     }
 
     public function getAllSubscriptions(){
-        //.well-known/mercure/subscriptions: the collection of subscriptions
-        return \array_reduce($this->topics, fn($acc, $topic) => [...$acc, ...$topic->subscribers], []);
+        return \array_reduce($this->topics, fn($acc, $topic) => [...$acc, ...$topic->getSubscriptions()], []);
     }
 
     public function getSubscriptionByTopicSelector($selector){
-        //.well-known/mercure/subscriptions/{topic}: the collection of subscriptions for the given topic selector
         $topics = $this->topicUtils->getMatchingTopics($selector, $this->topics);
-        return \array_reduce($topics, fn($acc, $topic) => [...$acc, ...$topic->subscribers], []);
+        return \array_reduce($topics, fn($acc, $topic) => [...$acc, ...$topic->getSubscriptions()], []);
     }
 
-    public function getSubscriptionForTopic($subscriber){
-        //.well-known/mercure/subscriptions/{topic}/{subscriber}: a specific subscription
-        $topics = $this->topicUtils->getMatchingTopics($selector, $this->topics);
-        return \array_reduce($topics, fn($acc, $topic) => [...$acc, ...$topic->subscribers], []);
+    public function getSubscriptionForTopic($topicName, $subscriberId){
+        $subscriber = $this->getSubscriber($subscriberId);
+        $topics = $this->topicUtils->getMatchingTopics($topicName, $this->topics);
+        if(\count($topics) !== 1 || $subscriber === null){
+            return null;
+        }
+        return $topics[0]->getSubscription($subscriber);
     }
 }

@@ -9,15 +9,17 @@ class Subscriber {
     private $id;
     private $subscribedTopics = [];
 
-    public function __construct($topic){
+    public function __construct($topics){
         $this->id = Uuid::uuid4();
-        $this->subscribe($topic);
+        $this->subscribe($topics);
     }
 
-    public function subscribe($topic){
-        if (!in_array($topic, $this->subscribedTopics, true)) {
-            $topic->subscribe($this);
-            $this->subscribedTopics[] = $topic;
+    public function subscribe($topics){
+        foreach($topics as $topic){
+            if (!in_array($topic, $this->subscribedTopics, true)) {
+                $topic->subscribe($this);
+                $this->subscribedTopics[] = $topic;
+            }
         }
     }
 
