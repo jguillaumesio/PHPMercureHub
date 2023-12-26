@@ -38,3 +38,14 @@ return [
 
 You can either use the default utils class, or a custom one. If you implement your own  
 utils class it must extends *\JGuillaumesio\PHPMercureHub\Utils\AbstractUtils* implements *\JGuillaumesio\PHPMercureHub\Utils\UtilsInterface*
+
+# Run tests
+## Windows
+```console
+.\vendor\bin\phpunit --configuration phpunit.xml
+```
+
+## Others
+```console
+./vendor/bin/phpunit --configuration phpunit.xml
+```
