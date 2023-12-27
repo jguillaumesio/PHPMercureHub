@@ -6,6 +6,7 @@ pull requests or to contact me for any further questions !**
 # TODO
 
 * Add config file checker
+* Only store useful headers in Subscription manager request attribute
 
 # Get started
 ## PHP Extensions
@@ -39,10 +40,12 @@ return [
 	 ]
  ]  
 ```  
-
 You can either use the default utils class, or a custom one. If you implement your own  
 utils class it must extends *\JGuillaumesio\PHPMercureHub\Utils\AbstractUtils* implements *\JGuillaumesio\PHPMercureHub\Utils\UtilsInterface*
 
+For those who aren't familiar with JWT algorithm, here is a simple website that can help you to generate secret file in the algorithm you want
+
+[8gwifi.org](https://8gwifi.org/jwsgen.jsp)
 # Run tests
 ## Windows
 ```console
