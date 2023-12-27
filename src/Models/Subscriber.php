@@ -6,7 +6,7 @@ use Ramsey\Uuid\Uuid;
 
 class Subscriber {
 
-    private $id;
+    public $id;
     private $subscribedTopics = [];
 
     public function __construct($topics){

@@ -32,9 +32,11 @@ class Utils extends AbstractUtils implements UtilsInterface {
     }
 
     public static function getQueryParams(){
-        $queryString = $_SERVER['QUERY_STRING'];
+        if(!\array_key_exists('QUERY_STRING', $_SERVER) || $_SERVER['QUERY_STRING'] === ''){
+            return [];
+        }
         $queryParams = [];
-        foreach (explode('&', $queryString) as $param) {
+        foreach (explode('&', $_SERVER['QUERY_STRING']) as $param) {
             list($name, $value) = array_pad(explode('=', $param, 2), 2, null);
             $name = urldecode($name);
             $value = urldecode($value);

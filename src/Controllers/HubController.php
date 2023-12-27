@@ -1,11 +1,13 @@
 <?php
 
-namespace Jguillaumesio\PhpMercureHub;
+namespace Jguillaumesio\PhpMercureHub\Controllers;
 
 use Jguillaumesio\PhpMercureHub\Authorization\AuthorizationManager;
 use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
+use Jguillaumesio\PhpMercureHub\SubscriptionManager;
+use Jguillaumesio\PhpMercureHub\Utils\UtilsManager;
 
-class SubscriptionController {
+class HubController {
 
     private $subscriptionManager;
     private $authManager;
@@ -58,7 +60,7 @@ class SubscriptionController {
         if(\count($topics) === 0){
             throw new \Error('INVALID_OR_MISSING_TOPIC');
         }
-        $this->subscriptionManager->setSubscriptionHeaders();
+        $this->subscriptionManager->setSubscriptionHeaders($topics);
     }
 
     public function discovery(){
@@ -68,5 +70,15 @@ class SubscriptionController {
          * The cookie SHOULD be set during discovery (see discovery) to improve the overall security. both the publisher and the hub have to share the same second level domain. The Domain attribute MAY be used to allow the publisher and the hub to use different subdomains. See discovery.
          * The cookie SHOULD have the Secure, HttpOnly and SameSite attributes set. The cookie's Path attribute SHOULD also be set to the hub's URL. See security considerations.
          */
+    }
+
+    public function topic($url){
+        $topicName = "/$url";
+        $topic = TopicUtils::getMatchingTopic([$topicName], $this->subscriptionManager->getTopics());
+        if($topic === null){
+            throw new \Error('INVALID_OR_MISSING_TOPIC');
+        }
+        $this->subscriptionManager->setSubscriptionHeaders([$topic]);
+        echo UtilsManager::generateResponse($topic, $this->subscriptionManager->getRequest());
     }
 }

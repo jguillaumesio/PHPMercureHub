@@ -14,6 +14,6 @@ class UtilsManager {
     }
 
     public static function __callStatic($method, $arguments) {
-        call_user_func_array([self::getInstance(), $method], $arguments);
+        return call_user_func_array([self::getInstance(), $method], $arguments);
     }
 }

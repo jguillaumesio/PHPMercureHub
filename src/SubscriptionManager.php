@@ -40,7 +40,6 @@ class SubscriptionManager
     }
 
     public function __construct(){
-        $config = Config::getConfig();
         $this->request = [
             'headers' => UtilsManager::getHeaders(),
             'query_params' => UtilsManager::getQueryParams(),
@@ -74,7 +73,7 @@ class SubscriptionManager
     }
 
     public function subscribe($selector){
-        $topics = TopicUtils::getMatchingTopics($selector, $this->topics);
+        $topics = TopicUtils::getMatchingTopics([$selector], $this->topics);
         if(\count($topics) > 0){
             $jwtPayload = (new AuthorizationManager())->getJWTPayload($this->request);
             $subscriber = $this->getSubscriber($jwtPayload['subscriber'] ?? null);
@@ -92,7 +91,7 @@ class SubscriptionManager
         if($this->request['response_type'] === null){
             throw new \Error('MISSING_CONTENT_TYPE_OR_RESPONSE_TYPE');
         }
-        else if(!array_key_exists($this->request['response_type'], UtilsManager::$availableResponseTypes)) {
+        else if(!array_key_exists($this->request['response_type'], UtilsManager::getAvailableResponseTypes())) {
             throw new \Error('INVALID_CONTENT_TYPE_OR_RESPONSE_TYPE');
         }
         UtilsManager::setHeader('Content-type', $this->request['response_type']);
@@ -104,7 +103,7 @@ class SubscriptionManager
         ];
         foreach ($topics as $topic){
             if($includeSelf){
-                $headers[] = ['key' => 'Link', 'value' => '<' . $topic . ($this->request['language'] !== null ? '-'.$this->request['language'] : '') . '.' . $this->request['response_type'] . '>; rel="self"'];
+                $headers[] = ['key' => 'Link', 'value' => '<' . $topic->name . ($this->request['language'] !== null ? '-'.$this->request['language'] : '') . '.' . $this->request['response_type'] . '>; rel="self"'];
             }
         }
         UtilsManager::setHeaders($headers, false);
@@ -125,13 +124,13 @@ class SubscriptionManager
     }
 
     public function getSubscriptionByTopicSelector($selector){
-        $topics = TopicUtils::getMatchingTopics($selector, $this->topics);
+        $topics = TopicUtils::getMatchingTopics([$selector], $this->topics);
         return \array_reduce($topics, fn($acc, $topic) => [...$acc, ...$topic->getSubscriptions()], []);
     }
 
     public function getSubscriptionForTopic($topicName, $subscriberId){
         $subscriber = $this->getSubscriber($subscriberId);
-        $topics = TopicUtils::getMatchingTopics($topicName, $this->topics);
+        $topics = TopicUtils::getMatchingTopics([$topicName], $this->topics);
         if(\count($topics) !== 1 || $subscriber === null){
             return null;
         }

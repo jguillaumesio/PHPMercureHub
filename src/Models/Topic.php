@@ -6,7 +6,7 @@ use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
 
 class Topic
 {
-    private $name;
+    public $name;
     private $subscribers;
 
     public function __construct($name){

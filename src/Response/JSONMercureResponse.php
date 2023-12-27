@@ -5,9 +5,9 @@ namespace Jguillaumesio\PhpMercureHub\Response;
 class JSONMercureResponse implements MercureResponse
 {
 
-    public function generate($resource, $values, $request)
+    public function generate($topic, $request)
     {
-        $tmp = \array_merge($values, ['@id' => $resource]);
+        $tmp = ['@id' => $topic->name];
         if(\array_key_exists('language',$request) && $request['language'] !== null){
             $tmp['@context'] =  ['@language' => $request['language']];
         }

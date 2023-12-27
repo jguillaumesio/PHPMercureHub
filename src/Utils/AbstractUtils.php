@@ -7,21 +7,25 @@ use Jguillaumesio\PhpMercureHub\Response\JSONMercureResponse;
 
 class AbstractUtils {
 
-    public static $availableResponseTypes = [
-        'text/html' => [
-            'type' => 'html',
-            'encoder' => HTMLMercureResponse::class
-        ],
-        'application/ld+json' => [
-            'type' => 'jsonld',
-            'encoder' => JSONMercureResponse::class
-        ]];
+    public static function getAvailableResponseTypes(){
+        return [
+            'text/html' => [
+                'type' => 'html',
+                'encoder' => HTMLMercureResponse::class
+            ],
+            'application/ld+json' => [
+                'type' => 'jsonld',
+                'encoder' => JSONMercureResponse::class
+            ]];
+    }
 
-    public static function generateResponse($resource, $values, $request, $type){
-        if(!array_key_exists($type, self::$availableResponseTypes)){
+    public static function generateResponse($topic, $request){
+        $availableResponseTypes = self::getAvailableResponseTypes();
+        $type = $request['response_type'] ?? '';
+        if(!array_key_exists($type, $availableResponseTypes)){
             throw new \Error('INVALID_CONTENT_TYPE_OR_RESPONSE_TYPE');
         }
-        return (new self::$availableResponseTypes[$type]['encoder']())->generate($resource, $values, $request);
+        return (new $availableResponseTypes[$type]['encoder']())->generate($topic, $request);
     }
 
 }
