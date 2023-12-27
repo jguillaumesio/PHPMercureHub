@@ -8,7 +8,7 @@ class QueryParamsAuthorization extends AbstractAuthorization  implements Authori
     public function getJWT($request)
     {
         if(!\array_key_exists('query_params', $request) || !array_key_exists('authorization', $request['query_params'])){
-            return $this->next();
+            return $this->next($request);
         }
         return $request['query_params']['authorization'];
     }

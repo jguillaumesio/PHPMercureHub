@@ -6,6 +6,7 @@ use Jguillaumesio\PhpMercureHub\Authorization\AuthorizationManager;
 use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
 use Jguillaumesio\PhpMercureHub\SubscriptionManager;
 use Jguillaumesio\PhpMercureHub\Utils\UtilsManager;
+use Ubiquity\log\Logger;
 
 class HubController {
 
@@ -20,7 +21,7 @@ class HubController {
     public function publication(){
         $request = $this->subscriptionManager->getRequest();
         $headers = $request['headers'];
-        if(!\is_array($headers) || \array_key_exists('content-type', $headers) || $headers['content-type'] !== 'application/x-www-form-urlencoded'){
+        if(!\is_array($headers) || !\array_key_exists('contenttype', $headers) || $headers['contenttype'] !== 'application/x-www-form-urlencoded'){
             throw new \Error('INVALID_CONTENT_TYPE');
         }
         $jwtPayload = $this->authManager->getJWTPayload($request);

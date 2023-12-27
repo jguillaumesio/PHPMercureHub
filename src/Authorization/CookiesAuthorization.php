@@ -11,7 +11,7 @@ class CookiesAuthorization extends AbstractAuthorization implements Authorizatio
     {
         $config = Config::getConfig();
        if(!\array_key_exists('auth_cookie_name', $config) || !\array_key_exists('cookie', $request) || !array_key_exists($config['auth_cookie_name'], $request['cookie'])){
-           return $this->next();
+           return $this->next($request);
        }
        return $request['cookie'][$config['auth_cookie_name']];
     }

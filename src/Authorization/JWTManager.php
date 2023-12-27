@@ -5,6 +5,7 @@ namespace Jguillaumesio\PhpMercureHub\Authorization;
 use Ahc\Jwt\JWT;
 use Ahc\Jwt\JWTException;
 use Jguillaumesio\PhpMercureHub\Config;
+use Ubiquity\log\Logger;
 
 class JWTManager {
 
@@ -32,7 +33,7 @@ class JWTManager {
             \array_key_exists('algo',$config['jwt']) &&
             \array_key_exists('secret',$config['jwt']) &&
             \in_array($config['jwt']['algo'], $this->allowedJWTAlgorithm) &&
-            \file_exists($config['jwt']['secret']);
+            \file_exists(getcwd() . $config['jwt']['secret']);
     }
 
     private function generateJWT(){

@@ -12,7 +12,7 @@ class HeadersAuthorization extends AbstractAuthorization  implements Authorizati
             !\array_key_exists('authorization', $request['headers']) ||
             \strpos($request['headers']['authorization'], 'Bearer ') === -1
         ){
-            return $this->next();
+            return $this->next($request);
         }
         return \str_replace('Bearer ','', $request['headers']['authorization']);
     }

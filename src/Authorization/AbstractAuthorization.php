@@ -10,7 +10,7 @@ abstract class AbstractAuthorization
         $this->nextHandler = $nextHandler;
     }
 
-    public function next(){
-        return ($this->nextHandler !== null) ? $this->nextHandler->authorize() : null;
+    public function next($request){
+        return ($this->nextHandler !== null) ? $this->nextHandler->getJWT($request) : '';
     }
 }

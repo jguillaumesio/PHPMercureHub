@@ -46,12 +46,13 @@ class SubscriptionManager
             'cookies' => UtilsManager::getCookies()
         ];
         $this->processRequest();
+        $this->addTopic('/users/dunglas');
         $this->hubUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . '/.well-known/mercure';
     }
 
     private function processRequest(){
         $this->request['response_type'] = $this->request['headers']['accept'] ?? $this->request['headers']['content_type'] ?? null;
-        $this->request['language'] = $this->request['headers']['accept-language'] ?? null;
+        $this->request['language'] = $this->request['headers']['acceptlanguage'] ?? null;
     }
 
     public function addTopic($topicName){
