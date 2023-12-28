@@ -8,6 +8,7 @@ class Topic
 {
     public $name;
     private $subscribers;
+    private $publications;
 
     public function __construct($name){
         if(!TopicUtils::isValidTopicName($name)){
@@ -15,6 +16,11 @@ class Topic
         }
         $this->name = $name;
         $this->subscribers = [];
+        $this->publications = [];
+    }
+
+    public function addPublication($publication){
+        $this->publications[] = $publication;
     }
 
     public function subscribe($subscriber = null){
