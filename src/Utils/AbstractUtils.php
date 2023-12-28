@@ -2,8 +2,7 @@
 
 namespace Jguillaumesio\PhpMercureHub\Utils;
 
-use Jguillaumesio\PhpMercureHub\Response\HTMLMercureResponse;
-use Jguillaumesio\PhpMercureHub\Response\JSONMercureResponse;
+use Jguillaumesio\PhpMercureHub\Response\ResponseFactory;
 
 class AbstractUtils {
 
@@ -11,11 +10,9 @@ class AbstractUtils {
         return [
             'text/html' => [
                 'type' => 'html',
-                'encoder' => HTMLMercureResponse::class
             ],
             'application/ld+json' => [
                 'type' => 'jsonld',
-                'encoder' => JSONMercureResponse::class
             ]];
     }
 
@@ -25,7 +22,8 @@ class AbstractUtils {
         if(!array_key_exists($type, $availableResponseTypes)){
             throw new \Error('INVALID_CONTENT_TYPE_OR_RESPONSE_TYPE');
         }
-        return (new $availableResponseTypes[$type]['encoder']())->generate($topic, $request);
+        $responseFactory = new ResponseFactory();
+        return $responseFactory($type)->generate($topic, $request);
     }
 
 }
