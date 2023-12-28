@@ -21,4 +21,6 @@ class UbiquityHubController extends Controller {
     public function topic($url) {
         (new HubController())->topic($url);
     }
+
+
 }

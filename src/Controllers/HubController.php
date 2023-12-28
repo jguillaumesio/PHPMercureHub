@@ -3,10 +3,9 @@
 namespace Jguillaumesio\PhpMercureHub\Controllers;
 
 use Jguillaumesio\PhpMercureHub\Authorization\AuthorizationManager;
-use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
 use Jguillaumesio\PhpMercureHub\SubscriptionManager;
+use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
 use Jguillaumesio\PhpMercureHub\Utils\UtilsManager;
-use Ubiquity\log\Logger;
 
 class HubController {
 
@@ -14,8 +13,8 @@ class HubController {
     private $authManager;
 
     public function __construct(){
-        $this->subscriptionManager = new SubscriptionManager();
-        $this->authManager = new AuthorizationManager();
+        $this->subscriptionManager = SubscriptionManager::getInstance();
+        $this->authManager = AuthorizationManager::getInstance();
     }
 
     public function publication(){
@@ -34,13 +33,6 @@ class HubController {
             !\is_array($jwtPayload['mercure']['publish'])
         ){
             throw new \Error('INVALID_OR_MISSING_AUTHORIZATION');
-        }
-        $topics = \array_filter(
-            \is_array($_GET['topic']) ? $_GET['topic'] : [$_GET['topic']],
-            fn($topic) => TopicUtils::isValidTopicName($topic)
-        );
-        if(\count($topics) === 0){
-            throw new \Error('INVALID_OR_MISSING_TOPIC');
         }
         if(\count(\array_diff($topics, $jwtPayload['mercure']['publish'])) === 0 && \count(\array_diff($jwtPayload['mercure']['publish'], $topics)) === 0){
             throw new \Error('MISSING_TOPIC_AUTHORIZATION');

@@ -6,14 +6,23 @@ use Jguillaumesio\PhpMercureHub\Authorization\AuthorizationManager;
 use Jguillaumesio\PhpMercureHub\Models\Subscriber;
 use Jguillaumesio\PhpMercureHub\Models\Topic;
 use Jguillaumesio\PhpMercureHub\Utils\TopicUtils;
+use Jguillaumesio\PhpMercureHub\Utils\Utils;
 use Jguillaumesio\PhpMercureHub\Utils\UtilsManager;
 
 class SubscriptionManager
 {
+    private static $instance;
     private $topics = [];
     private $subscribers = [];
     private $request;
     private $hubUrl;
+
+    public static function getInstance(){
+        if(self::$instance === null){
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
     public function getTopics() {
         return $this->topics;
@@ -46,7 +55,6 @@ class SubscriptionManager
             'cookies' => UtilsManager::getCookies()
         ];
         $this->processRequest();
-        $this->addTopic('/users/dunglas');
         $this->hubUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . '/.well-known/mercure';
     }
 
@@ -65,7 +73,7 @@ class SubscriptionManager
         }
     }
 
-    private function getSubscriber($id){
+    public function getSubscriber($id){
         if (array_key_exists($id, $this->subscribers)) {
             return $this->subscribers[$id];
         } else {
@@ -118,23 +126,5 @@ class SubscriptionManager
     public function setPublicationHeaders($topic){
         $this->setLinkHeaders($topic);
         $this->setResponseTypeHeader();
-    }
-
-    public function getAllSubscriptions(){
-        return \array_reduce($this->topics, fn($acc, $topic) => [...$acc, ...$topic->getSubscriptions()], []);
-    }
-
-    public function getSubscriptionByTopicSelector($selector){
-        $topics = TopicUtils::getMatchingTopics([$selector], $this->topics);
-        return \array_reduce($topics, fn($acc, $topic) => [...$acc, ...$topic->getSubscriptions()], []);
-    }
-
-    public function getSubscriptionForTopic($topicName, $subscriberId){
-        $subscriber = $this->getSubscriber($subscriberId);
-        $topics = TopicUtils::getMatchingTopics([$topicName], $this->topics);
-        if(\count($topics) !== 1 || $subscriber === null){
-            return null;
-        }
-        return $topics[0]->getSubscription($subscriber);
     }
 }
